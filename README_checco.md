@@ -1,4 +1,4 @@
-# Compiti Persona 1: Input, Parsing e Built-in
+# Compiti Checco: Input, Parsing e Built-in
 
 ## 1. Prompt e input utente
 - Mostrare il prompt ogni volta che la shell è pronta a ricevere un comando.

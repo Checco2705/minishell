@@ -1,4 +1,4 @@
-# Compiti Persona 2: Esecuzione, Processi e Gestione Avanzata
+# Compiti Bobbi: Esecuzione, Processi e Gestione Avanzata
 
 ## 1. Esecuzione dei comandi
 - Ricevere dalla Persona 1 la struttura dati con i comandi e i loro argomenti.
