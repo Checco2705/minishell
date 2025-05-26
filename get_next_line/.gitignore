@@ -1,0 +1,18 @@
+# file di sistema
+.DS_Store
+
+# file oggetto
+*.o
+
+# Libreria
+*.lib
+*.a
+
+# eseguibile
+*.out
+
+# file temporanei
+*.swp
+
+# file di debug
+*.dSYM/

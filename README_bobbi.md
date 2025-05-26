@@ -1,11 +1,11 @@
 # Compiti Bobbi: Esecuzione, Processi e Gestione Avanzata
 
 ## 1. Esecuzione dei comandi
-- Ricevere dalla Persona 1 la struttura dati con i comandi e i loro argomenti.
+- Ricevere da checco la struttura dati con i comandi e i loro argomenti.
 - Cercare il percorso dell'eseguibile usando la variabile d'ambiente PATH (se il comando non è built-in).
 - Usare le funzioni fork ed execve per creare nuovi processi e lanciare i comandi esterni.
 - Gestire la terminazione dei processi figli con wait e waitpid.
-- Gestire l'exit status e comunicarlo alla Persona 1 per l'espansione di $?.
+- Gestire l'exit status e comunicarlo a checco per l'espansione di $?.
 
 ## 2. Redirezioni e pipe
 - Implementare la gestione delle redirezioni:
@@ -29,8 +29,8 @@
 - Verificare che non ci siano memory leak (tranne quelli causati da readline, che sono accettati).
 
 ## 5. Integrazione e collaborazione
-- Collaborare con la Persona 1 per ricevere i comandi già "parsati" e pronti all'esecuzione.
-- Restituire l'exit status e gli eventuali errori alla Persona 1.
+- Collaborare con checco per ricevere i comandi già "parsati" e pronti all'esecuzione.
+- Restituire l'exit status e gli eventuali errori a checco.
 - Testare ogni funzionalità confrontando il comportamento con Bash.
 - Scrivere commenti chiari nel codice per aiutare l'altra persona.
 
