@@ -1,12 +1,14 @@
 #ifdef MINISHELL_H
 #define MINISHELL_H
 
+#include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <string.h>
 
 /* --- Struct globale unico per stato shell --- */
 typedef struct s_shell_state
@@ -14,6 +16,15 @@ typedef struct s_shell_state
     volatile sig_atomic_t signal;
     int last_status;
 }   t_shell_state;
+
+typedef struct s_command {
+    char   *path;       // percorso dell'eseguibile (già risolto)
+    char  **argv;       // array di argomenti, terminato da NULL
+    int     in_fd;      // file descriptor da usare come STDIN (se non c’è, è -1)
+    int     out_fd;     // file descriptor da usare come STDOUT (se non c’è, è -1)
+    int     is_builtin; // 1 se è built-in, 0 altrimenti
+    struct s_command *next; // puntatore al comando successivo (per pipeline)
+} t_command;
 
 static t_shell_state g_state = {0, 0};
 
