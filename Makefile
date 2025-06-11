@@ -1,45 +1,53 @@
-# Makefile per Minishell (Scuola 42)
+# === Directory principali ===
+SRCDIR   := src
+INCDIR   := include
+OBJDIR   := obj
+LIBFTDIR := libft
+PRTFDIR  := printf
 
-# Directory sorgenti e oggetti
-SRCDIR := src
-OBJDIR := obj
+# === Output ===
+NAME     := minishell
+LIBFT    := $(LIBFTDIR)/libft.a
+PRINTF   := $(PRTFDIR)/libftprintf.a
 
-# Nome eseguibile
-NAME := minishell
+# === Compiler & flags ===
+CC       := gcc
+CFLAGS   := -Wall -Wextra -Werror -g -I$(INCDIR) -I$(LIBFTDIR) -I$(PRTFDIR)
 
-# Compilatore e flag
-CC := gcc
-CFLAGS := -Wall -Wextra -Werror -g -I$(SRCDIR)
-
-# Raccolta dei sorgenti e degli oggetti
-SRCS := $(wildcard $(SRCDIR)/*.c)
+# === Ricerca ricorsiva dei file .c ===
+SRCS := $(shell find $(SRCDIR) -type f -name '*.c')
 OBJS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRCS))
 
-# Regola di default
+# === Target default ===
 all: $(NAME)
 
-# Collegamento eseguibile
-$(NAME): $(OBJS)
-	$(CC) $(OBJS) -o $(NAME)
+# === Linking finale ===
+$(NAME): $(LIBFT) $(PRINTF) $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) $(LIBFT) $(PRINTF) -o $@
 
-# Compilazione dei .c in .o nella cartella obj
-$(OBJDIR)/%.o: $(SRCDIR)/%.c | $(OBJDIR)
+# === Compilazione sorgenti in obj/... ===
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Creazione della cartella obj se non esiste
-$(OBJDIR):
-	@mkdir -p $(OBJDIR)
+# === Costruzione librerie ===
+$(LIBFT):
+	@$(MAKE) -C $(LIBFTDIR)
 
-# Pulisce i file oggetto
+$(PRINTF):
+	@$(MAKE) -C $(PRTFDIR)
+
+# === Utility ===
 clean:
 	@rm -rf $(OBJDIR)
+	@$(MAKE) -C $(LIBFTDIR) clean
+	@$(MAKE) -C $(PRTFDIR) clean
 
-# Pulisce oggetti ed eseguibile
 fclean: clean
 	@rm -f $(NAME)
+	@$(MAKE) -C $(LIBFTDIR) fclean
+	@$(MAKE) -C $(PRTFDIR) fclean
 
-# Ricompila da zero
 re: fclean all
 
-# Obbliga regole senza file
 .PHONY: all clean fclean re
