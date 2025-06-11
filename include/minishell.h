@@ -53,4 +53,32 @@ void cleanup_after_execution(t_command *commands);
 extern t_command *parse_input(const char *line);
 extern void free_commands(t_command *commands);
 
+/* --- Funzioni di tokenizzazione --- */
+t_token *tokenize(const char *input);
+void free_tokens(t_token *tokens);
+
+/* --- Funzioni di gestione token --- */
+t_token *create_token(const char *value, t_token_type type);
+t_token *handle_redirection_operator(const char *input, int *i);
+int is_operator(const char *input, int i);
+char *extract_quoted_word(const char *input, int *i, char quote);
+char *extract_word(const char *input, int *i);
+
+/* --- Funzioni di gestione quote --- */
+void handle_quotes(t_token *tokens);
+
+/* --- Funzioni di gestione variabili --- */
+void expand_variables(t_token *tokens);
+char *expand_string(const char *str);
+void copy_env_value(const char *var_name, char *dest, int *j);
+
+/* --- Funzioni di controllo sintassi --- */
+int check_syntax_errors(t_token *tokens);
+
+/* --- Funzioni di gestione redirezioni --- */
+void handle_redirection(t_command *cmd, t_token *curr);
+
+/* --- Funzioni di costruzione comandi --- */
+t_command *build_commands(t_token *tokens);
+
 #endif
