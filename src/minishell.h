@@ -1,4 +1,4 @@
-#ifdef MINISHELL_H
+#ifndef MINISHELL_H
 #define MINISHELL_H
 
 #include <sys/wait.h>
@@ -20,11 +20,27 @@ typedef struct s_shell_state
 typedef struct s_command {
     char   *path;       // percorso dell'eseguibile (già risolto)
     char  **argv;       // array di argomenti, terminato da NULL
-    int     in_fd;      // file descriptor da usare come STDIN (se non c’è, è -1)
-    int     out_fd;     // file descriptor da usare come STDOUT (se non c’è, è -1)
+    int     in_fd;      // file descriptor da usare come STDIN (se non c'è, è -1)
+    int     out_fd;     // file descriptor da usare come STDOUT (se non c'è, è -1)
     int     is_builtin; // 1 se è built-in, 0 altrimenti
     struct s_command *next; // puntatore al comando successivo (per pipeline)
 } t_command;
+
+typedef enum e_token_type {
+    TOKEN_WORD,      // parola normale (comando o argomento)
+    TOKEN_PIPE,      // |
+    TOKEN_REDIR_IN,  // <
+    TOKEN_REDIR_OUT, // >
+    TOKEN_HEREDOC,   // <<
+    TOKEN_APPEND,    // >>
+    TOKEN_EOF        // fine input/token list
+}   t_token_type;
+
+typedef struct s_token {
+    char           *value;      // testo del token
+    t_token_type    type;       // tipo di token
+    struct s_token *next;       // prossimo token nella lista
+}   t_token;
 
 static t_shell_state g_state = {0, 0};
 

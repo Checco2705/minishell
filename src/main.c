@@ -15,39 +15,40 @@
 
 #include "minishell.h" 
 
-int main(void) {
-    char *line;
-    t_command *commands;
+int main(void)
+{
+	char *line;
+	t_command *commands;
 
-    /* 1) Setup segnali (tua parte) */
-    setup_signals();
+	/* 1) Setup segnali (tua parte) */
+	setup_signals();
 
-    /* 2) Loop principale della shell */
-    while (1) {
-        /* a) Leggi input utente */
-        line = readline("minishell$ ");
-        if (!line) {
-            printf("exit\n");
-            break;
-        }
-        if (*line)
-            add_history(line);
+	/* 2) Loop principale della shell */
+	while (1) {
+		/* a) Leggi input utente */
+		line = readline("minishell$ ");
+		if (!line) {
+			printf("exit\n");
+			break;
+		}
+		if (*line)
+			add_history(line);
 
-        /* b) Reset segnale */
-        g_state.signal = 0;
+		/* b) Reset segnale */
+		g_state.signal = 0;
 
-        /* c) Parsing input (Persona 1) */
-        commands = parse_input(line);
-        free(line);
-        if (!commands)
-            continue;
+		/* c) Parsing input (Persona 1) */
+		commands = parse_input(line);
+		free(line);
+		if (!commands)
+			continue;
 
-        /* d) Esecuzione pipeline (tua parte) */
-        execute_pipeline(commands);
+		/* d) Esecuzione pipeline (tua parte) */
+		execute_pipeline(commands);
 
-        /* e) Cleanup memorie e risorse (tua parte) */
-        cleanup_after_execution(commands);
-    }
+		/* e) Cleanup memorie e risorse (tua parte) */
+		cleanup_after_execution(commands);
+		}
 
-    return g_state.last_status;
+	return g_state.last_status;
 }
