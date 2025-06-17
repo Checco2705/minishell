@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 19:31:43 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/06/11 19:39:01 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/06/17 17:29:57 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,6 @@
 ** @param head: Puntatore alla testa della lista
 ** @param tail: Puntatore alla coda della lista
 ** @param tok: Il token da aggiungere
-**
-** La funzione aggiunge un token alla lista mantenendo sia il puntatore
-** alla testa che alla coda. Se la lista è vuota, il token diventa sia
-** testa che coda, altrimenti viene aggiunto in coda.
 */
 static void add_token_to_list(t_token **head, t_token **tail, t_token *tok)
 {
@@ -36,69 +32,57 @@ static void add_token_to_list(t_token **head, t_token **tail, t_token *tok)
 ** Gestisce l'estrazione e l'aggiunta di una parola.
 ** 
 ** @param line: La stringa da processare
-** @param i: Indice corrente nella stringa
+** @param i: Puntatore all'indice corrente nella stringa
 ** @param head: Puntatore alla testa della lista di token
 ** @param tail: Puntatore alla coda della lista di token
 ** @return: La lunghezza della parola estratta
-**
-** La funzione estrae una parola dalla stringa, crea un nuovo token
-** e lo aggiunge alla lista. Gestisce anche la memoria allocata
-** per la parola estratta.
 */
-static int handle_word(const char *line, int i, t_token **head, t_token **tail)
+static int handle_word(const char *line, int *i, t_token **head, t_token **tail)
 {
     char *word;
-    t_token *tok;
-    int wlen;
+    int len;
 
-    word = NULL;
-    wlen = extract_word(line, i, &word);
-    if (wlen > 0 && word && *word)
-    {
-        tok = create_token(word, TOKEN_WORD);
-        add_token_to_list(head, tail, tok);
-    }
+    word = extract_word(line, i);
+    if (!word)
+        return (0);
+    len = strlen(word);
+    if (len > 0)
+        add_token_to_list(head, tail, create_token(word, TOKEN_WORD));
     free(word);
-    return (wlen);
+    return (len);
 }
 
 /*
-** Funzione principale di tokenizzazione.
+** Tokenizza una stringa in una lista di token.
 ** 
 ** @param line: La stringa da tokenizzare
-** @return: La lista di token generata
-**
-** La funzione converte una stringa in una lista di token, riconoscendo:
-** - Operatori (|, <, >, <<, >>)
-** - Parole (stringhe di caratteri)
-** - Spazi e tabulazioni (che vengono ignorati)
-** La memoria per i token viene allocata dinamicamente e deve essere
-** liberata dal chiamante usando free_tokens.
+** @return: La testa della lista di token
 */
 t_token *tokenize(const char *line)
 {
-    int i;
     t_token *head;
     t_token *tail;
-    t_token *tok;
+    int i;
 
-    i = 0;
+    if (!line)
+        return (NULL);
     head = NULL;
     tail = NULL;
+    i = 0;
     while (line[i])
     {
         while (line[i] == ' ' || line[i] == '\t')
             i++;
         if (!line[i])
             break;
-        tok = NULL;
-        if (is_operator(line, i, &tok))
+        if (is_operator(line, i))
         {
-            add_token_to_list(&head, &tail, tok);
-            i += is_operator(line, i, &tok);
+            t_token *tok = handle_redirection_operator(line, &i);
+            if (tok)
+                add_token_to_list(&head, &tail, tok);
             continue;
         }
-        i += handle_word(line, i, &head, &tail);
+        handle_word(line, &i, &head, &tail);
     }
     return (head);
 }

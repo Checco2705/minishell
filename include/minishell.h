@@ -46,7 +46,7 @@ static t_shell_state g_state = {0, 0};
 
 /* --- Funzioni user (Parte esecuzione & segnali) --- */
 void setup_signals(void);
-void execute_pipeline(t_command *commands);
+int execute_pipeline(t_command *commands);
 void cleanup_after_execution(t_command *commands);
 
 /* --- Funzioni Persona 1 (Parte parsing) --- */
@@ -65,12 +65,13 @@ char *extract_quoted_word(const char *input, int *i, char quote);
 char *extract_word(const char *input, int *i);
 
 /* --- Funzioni di gestione quote --- */
-void handle_quotes(t_token *tokens);
+void handle_quotes(t_token *token);
+int process_escape(const char *str, int *i, char *result, int *j);
 
 /* --- Funzioni di gestione variabili --- */
-void expand_variables(t_token *tokens);
+int copy_env_value(const char *src, int *si, char *dst, int *di);
+void expand_variables(t_token **tokens);
 char *expand_string(const char *str);
-void copy_env_value(const char *var_name, char *dest, int *j);
 
 /* --- Funzioni di controllo sintassi --- */
 int check_syntax_errors(t_token *tokens);
@@ -80,5 +81,26 @@ void handle_redirection(t_command *cmd, t_token *curr);
 
 /* --- Funzioni di costruzione comandi --- */
 t_command *build_commands(t_token *tokens);
+
+/* --- Funzioni built-in --- */
+int ft_echo(char **args);
+int ft_cd(char **args);
+int ft_pwd(char **args);
+int ft_export(char **args);
+int ft_unset(char **args);
+int ft_env(char **args);
+int ft_exit(char **args);
+
+/* --- Funzioni di pipeline --- */
+int init_pipeline(t_command *commands, int ***pipes, pid_t **pids);
+void cleanup_resources(int **pipes, pid_t *pids, int num_cmds);
+void setup_child_fds(t_command *cmd, int **pipes, int num_cmds, int i);
+void execute_child(t_command *cmd);
+void close_pipe_ends(int **pipes, int num_cmds, int current_cmd);
+void close_last_pipe(int **pipes, int num_cmds);
+void wait_for_children(pid_t *pids, int num_cmds);
+int **create_pipes(int num_cmds);
+
+void execute_builtin(t_command *cmd);
 
 #endif

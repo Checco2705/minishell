@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 19:24:01 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/06/11 19:40:02 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/06/17 17:35:36 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,29 +48,33 @@ t_token *create_token(const char *val, t_token_type type)
 ** il token appropriato. Restituisce la lunghezza dell'operatore
 ** per permettere l'avanzamento corretto nell'input.
 */
-static int handle_redirection_operator(const char *line, int i, t_token **tok)
+t_token *handle_redirection_operator(const char *input, int *i)
 {
-    if (line[i] == '<' && line[i + 1] == '<')
+    if (input[*i] == '<' && input[*i + 1] == '<')
     {
-        *tok = create_token("<<", TOKEN_HEREDOC);
-        return (2);
+        t_token *tok = create_token("<<", TOKEN_HEREDOC);
+        *i += 2;
+        return (tok);
     }
-    if (line[i] == '>' && line[i + 1] == '>')
+    if (input[*i] == '>' && input[*i + 1] == '>')
     {
-        *tok = create_token(">>", TOKEN_APPEND);
-        return (2);
+        t_token *tok = create_token(">>", TOKEN_APPEND);
+        *i += 2;
+        return (tok);
     }
-    if (line[i] == '<')
+    if (input[*i] == '<')
     {
-        *tok = create_token("<", TOKEN_REDIR_IN);
-        return (1);
+        t_token *tok = create_token("<", TOKEN_REDIR_IN);
+        *i += 1;
+        return (tok);
     }
-    if (line[i] == '>')
+    if (input[*i] == '>')
     {
-        *tok = create_token(">", TOKEN_REDIR_OUT);
-        return (1);
+        t_token *tok = create_token(">", TOKEN_REDIR_OUT);
+        *i += 1;
+        return (tok);
     }
-    return (0);
+    return (NULL);
 }
 
 /*
@@ -89,14 +93,13 @@ static int handle_redirection_operator(const char *line, int i, t_token **tok)
 ** - >> (append)
 ** Restituisce la lunghezza dell'operatore per l'avanzamento.
 */
-int is_operator(const char *line, int i, t_token **tok)
+int is_operator(const char *input, int i)
 {
-    if (line[i] == '|')
+    if (input[i] == '|')
     {
-        *tok = create_token("|", TOKEN_PIPE);
         return (1);
     }
-    return (handle_redirection_operator(line, i, tok));
+    return (handle_redirection_operator(input, &i) != NULL);
 }
 
 /*
@@ -112,21 +115,22 @@ int is_operator(const char *line, int i, t_token **tok)
 ** dal risultato. La memoria per la stringa estratta viene allocata
 ** dinamicamente.
 */
-static int extract_quoted_word(const char *line, int i, char **out)
+char *extract_quoted_word(const char *input, int *i, char quote)
 {
-    char quote;
     int start;
     int len;
 
-    quote = line[i++];
-    start = i;
-    while (line[i] && line[i] != quote)
-        i++;
-    len = i - start;
-    *out = strndup(line + start, len);
-    if (line[i] == quote)
-        i++;
-    return (i - start + 1);
+    start = *i + 1; // Salta la virgoletta iniziale
+    len = 0;
+    (*i)++; // Avanza oltre la virgoletta iniziale
+    while (input[*i] && input[*i] != quote) {
+        (*i)++;
+        len++;
+    }
+    char *out = strndup(input + start, len); // Copia solo il contenuto
+    if (input[*i] == quote)
+        (*i)++; // Salta la virgoletta finale
+    return (out);
 }
 
 /*
@@ -142,20 +146,20 @@ static int extract_quoted_word(const char *line, int i, char **out)
 ** - Parole normali (fino al prossimo spazio o operatore)
 ** La memoria per la stringa estratta viene allocata dinamicamente.
 */
-int extract_word(const char *line, int i, char **out)
+char *extract_word(const char *input, int *i)
 {
     int start;
     int len;
 
-    start = i;
+    start = *i;
     len = 0;
-    if (line[i] == '\'' || line[i] == '"')
-        return (extract_quoted_word(line, i, out));
-    while (line[i] && line[i] != ' ' && line[i] != '\t' &&
-           line[i] != '|' && line[i] != '<' && line[i] != '>' &&
-           line[i] != '\'' && line[i] != '"')
-        i++;
-    len = i - start;
-    *out = strndup(line + start, len);
-    return (len);
+    if (input[*i] == '\'' || input[*i] == '"')
+        return (extract_quoted_word(input, i, input[*i]));
+    while (input[*i] && input[*i] != ' ' && input[*i] != '\t' &&
+           input[*i] != '|' && input[*i] != '<' && input[*i] != '>' &&
+           input[*i] != '\'' && input[*i] != '"')
+        *i += 1;
+    len = *i - start;
+    char *out = strndup(input + start, len);
+    return (out);
 }

@@ -6,11 +6,12 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 19:33:02 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/06/11 19:38:19 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/06/17 17:27:09 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <ctype.h>  // Per isalnum
 
 /*
 ** Gestisce l'espansione della variabile $? (stato di uscita).
@@ -80,7 +81,7 @@ static int handle_env_var(const char *src, int var_start, int var_len,
 ** (variabili d'ambiente). Se non viene trovata una variabile valida, la funzione
 ** restituisce 0 e non modifica gli indici.
 */
-static int copy_env_value(const char *src, int *si, char *dst, int *di)
+int copy_env_value(const char *src, int *si, char *dst, int *di)
 {
     int var_start;
     int var_len;
@@ -112,7 +113,7 @@ static int copy_env_value(const char *src, int *si, char *dst, int *di)
 ** La memoria per il risultato viene allocata dinamicamente e deve essere
 ** liberata dal chiamante.
 */
-static char *expand_string(const char *src)
+char *expand_string(const char *src)
 {
     char *dst;
     int si;

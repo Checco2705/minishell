@@ -6,11 +6,34 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 19:24:01 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/06/11 19:54:51 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/06/17 17:32:28 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+/*
+** Verifica se un comando è built-in.
+** 
+** @param cmd_name: Il nome del comando da verificare
+** @return: 1 se è built-in, 0 altrimenti
+*/
+static int is_builtin_command(const char *cmd_name)
+{
+    const char *builtins[] = {
+        "echo", "cd", "pwd", "export", "unset", "env", "exit", NULL
+    };
+    int i;
+
+    i = 0;
+    while (builtins[i])
+    {
+        if (strcmp(cmd_name, builtins[i]) == 0)
+            return (1);
+        i++;
+    }
+    return (0);
+}
 
 /*
 ** Inizializza un nuovo comando con i suoi argomenti.
@@ -47,6 +70,8 @@ static t_command *init_command(t_token *curr, int *argc, char **argv)
     cmd->argv = malloc((*argc + 1) * sizeof(char*));
     for (int i = 0; i <= *argc; i++)
         cmd->argv[i] = argv[i];
+    if (cmd->argv[0])  // Se c'è un comando
+        cmd->is_builtin = is_builtin_command(cmd->argv[0]);  // Verifica se è built-in
     return (cmd);
 }
 
