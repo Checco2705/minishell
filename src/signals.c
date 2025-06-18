@@ -15,6 +15,10 @@ static void handle_sigint(int signo)
     g_state.signal = SIGINT;
     /* "\nminishell$ " fa andare a capo e ristampa il prompt */
     write(STDOUT_FILENO, "\nminishell$ ", strlen("\nminishell$ "));
+    /* Pulisci il buffer di input */
+    rl_on_new_line();
+    rl_replace_line("", 0);
+    rl_redisplay();
 }
 
 /*

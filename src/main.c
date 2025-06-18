@@ -26,7 +26,8 @@ int main(void)
 	/* 2) Loop principale della shell */
 	while (1) {
 		/* a) Leggi input utente */
-		line = readline("minishell$ ");
+		fprintf(stderr, "minishell$ ");
+		line = readline(NULL);
 		if (!line) {
 			printf("exit\n");
 			break;
