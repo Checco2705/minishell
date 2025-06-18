@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stddef.h>
 
+t_shell_state g_state = {0, 0};
+
 /*
   Signal handler per SIGINT. Imposta g_state.signal e ristampa il prompt.
   NOTA: write è async-signal-safe, quindi va bene chiamarlo qui.

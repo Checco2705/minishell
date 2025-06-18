@@ -42,11 +42,12 @@ typedef struct s_token {
     struct s_token *next;       // prossimo token nella lista
 }   t_token;
 
-static t_shell_state g_state = {0, 0};
+extern t_shell_state g_state;
 
 /* --- Funzioni user (Parte esecuzione & segnali) --- */
 void setup_signals(void);
 int execute_pipeline(t_command *commands);
+int count_commands(t_command *commands);
 void cleanup_after_execution(t_command *commands);
 
 /* --- Funzioni Persona 1 (Parte parsing) --- */
@@ -81,6 +82,9 @@ void handle_redirection(t_command *cmd, t_token *curr);
 
 /* --- Funzioni di costruzione comandi --- */
 t_command *build_commands(t_token *tokens);
+
+/* --- Funzioni di risoluzione percorsi --- */
+char *find_executable(const char *cmd);
 
 /* --- Funzioni built-in --- */
 int ft_echo(char **args);

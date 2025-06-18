@@ -1,4 +1,5 @@
 #include "minishell.h"  // contiene t_shell_state g_state e prototipi
+#include "libft.h"     // per ft_putstr_fd
 #include <unistd.h>
 #include <sys/wait.h>
 #include <stdlib.h>
@@ -13,33 +14,44 @@ int execute_pipeline(t_command *commands)
 {
     int **pipes;
     pid_t *pids;
-    int num_cmds = init_pipeline(commands, &pipes, &pids);  // Inizializza pipe e pids, ritorna numero comandi
+    int num_cmds = count_commands(commands);
+
+    // Se è un singolo comando built-in, eseguilo direttamente
+    if (num_cmds == 1 && commands->is_builtin) {
+        execute_builtin(commands);
+        return g_state.last_status;
+    }
+
+    // Altrimenti procedi con la pipeline normale
+    num_cmds = init_pipeline(commands, &pipes, &pids);
     int i;
+    t_command *current;
 
     if (num_cmds <= 0)
         return (1);
     i = 0;
-    while (i < num_cmds)
+    current = commands;
+    while (i < num_cmds && current)
     {
-        t_command *cmd = &commands[i];
-        pids[i] = fork();  // Crea un nuovo processo
+        pids[i] = fork();
         if (pids[i] < 0)
         {
-            cleanup_resources(pipes, pids, num_cmds);  // Libera risorse
+            cleanup_resources(pipes, pids, num_cmds);
             return (1);
         }
         if (pids[i] == 0)
         {
-            setup_child_fds(cmd, pipes, num_cmds, i);  // Configura file descriptor
-            execute_child(cmd);  // Esegui il comando
-            exit(1);  // Se execute_child ritorna, c'è stato un errore
+            setup_child_fds(current, pipes, num_cmds, i);
+            execute_child(current);
+            exit(1);
         }
-        close_pipe_ends(pipes, num_cmds, i);  // Chiudi le pipe non più necessarie
+        close_pipe_ends(pipes, num_cmds, i);
         i++;
+        current = current->next;
     }
-    close_last_pipe(pipes, num_cmds);  // Chiudi l'ultima pipe rimasta aperta
-    wait_for_children(pids, num_cmds); // Aspetta che tutti i figli terminino
-    cleanup_resources(pipes, pids, num_cmds);  // Libera tutta la memoria
+    close_last_pipe(pipes, num_cmds);
+    wait_for_children(pids, num_cmds);
+    cleanup_resources(pipes, pids, num_cmds);
     return (0);
 }
 
@@ -82,29 +94,47 @@ int **create_pipes(int num_cmds)
 
 void close_pipe_ends(int **pipes, int num_cmds, int current_cmd)
 {
-    (void)num_cmds;  // Evita warning di parametro non utilizzato
-    if (current_cmd > 0) {      // Se non è il primo comando
-        close(pipes[current_cmd - 1][0]);  // Chiudi fd lettura pipe precedente
-        close(pipes[current_cmd - 1][1]);  // Chiudi fd scrittura pipe precedente
+    if (num_cmds <= 1)
+        return;
+    
+    // Chiudi tutte le pipe tranne quelle necessarie per il prossimo comando
+    for (int i = 0; i < num_cmds - 1; i++) {
+        if (i != current_cmd && i != current_cmd - 1) {
+            close(pipes[i][0]);
+            close(pipes[i][1]);
+        }
+    }
+    
+    // Chiudi le pipe del comando corrente che non servono più
+    if (current_cmd > 0) {
+        close(pipes[current_cmd - 1][1]);  // Chiudi scrittura pipe precedente
+    }
+    if (current_cmd < num_cmds - 1) {
+        close(pipes[current_cmd][0]);  // Chiudi lettura pipe corrente
     }
 }
 
 void setup_child_fds(t_command *cmd, int **pipes, int num_cmds, int i)
 {
-    if (i > 0)                  // Se non è il primo comando
-        dup2(pipes[i - 1][0], STDIN_FILENO);  // Leggi dalla pipe precedente
-    if (i < num_cmds - 1)       // Se non è l'ultimo comando
-        dup2(pipes[i][1], STDOUT_FILENO);     // Scrivi sulla pipe successiva
-    
-    if (cmd->in_fd >= 0)        // Se c'è redirezione input
-        dup2(cmd->in_fd, STDIN_FILENO);       // Usa file come input
-    if (cmd->out_fd >= 0)       // Se c'è redirezione output
-        dup2(cmd->out_fd, STDOUT_FILENO);     // Usa file come output
-    
-    for (int j = 0; j < num_cmds - 1; ++j) {  // Per ogni pipe
-        close(pipes[j][0]);     // Chiudi fd lettura
-        close(pipes[j][1]);     // Chiudi fd scrittura
+    // Prima chiudi tutti i file descriptor che non servono
+    for (int j = 0; j < num_cmds - 1; ++j) {
+        if (j == i - 1) {  // Pipe di input per il comando corrente
+            if (i > 0)
+                dup2(pipes[j][0], STDIN_FILENO);
+        }
+        else if (j == i) {  // Pipe di output per il comando corrente
+            if (i < num_cmds - 1)
+                dup2(pipes[j][1], STDOUT_FILENO);
+        }
+        close(pipes[j][0]);
+        close(pipes[j][1]);
     }
+
+    // Gestisci le redirezioni dopo le pipe
+    if (cmd->in_fd >= 0)
+        dup2(cmd->in_fd, STDIN_FILENO);
+    if (cmd->out_fd >= 0)
+        dup2(cmd->out_fd, STDOUT_FILENO);
 }
 
 void execute_child(t_command *cmd)
@@ -113,11 +143,22 @@ void execute_child(t_command *cmd)
         execute_builtin(cmd);   // Eseguilo direttamente
         exit(g_state.last_status);  // Esci con status del built-in
     }
+
+    // Se non abbiamo un percorso, prova a trovarlo in PATH
+    if (!cmd->path && cmd->argv && cmd->argv[0]) {
+        cmd->path = find_executable(cmd->argv[0]);
+    }
+
     if (cmd->path) {  // Se abbiamo un percorso valido
         execve(cmd->path, cmd->argv, environ);  // Esegui comando esterno
         perror("execve");           // Se execve fallisce, stampa errore
+    } else {
+        ft_putstr_fd("minishell: command not found: ", 2);
+        if (cmd->argv && cmd->argv[0])
+            ft_putstr_fd(cmd->argv[0], 2);
+        ft_putstr_fd("\n", 2);
     }
-    exit(EXIT_FAILURE);         // Esci con errore
+    exit(127);  // Esci con errore "command not found"
 }
 
 void wait_for_children(pid_t *pids, int num_cmds)
