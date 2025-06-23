@@ -5,7 +5,6 @@
 #include <stdlib.h>
 
 extern char **environ;  // Dichiarazione esterna di environ
-
 /*
   Esegue una lista di comandi collegati da pipe e redirezioni.
   commands è la testa di una lista collegata (linked list) di t_command.

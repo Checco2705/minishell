@@ -158,7 +158,17 @@ char *extract_word(const char *input, int *i)
     start = *i;
     len = 0;
     if (input[*i] == '\'' || input[*i] == '"')
-        return (extract_quoted_word(input, i, input[*i]));
+    {
+        char quote = input[*i];
+        (*i)++; // Salta la virgoletta iniziale
+        while (input[*i] && input[*i] != quote)
+            (*i)++;
+        if (input[*i] == quote)
+            (*i)++; // Salta la virgoletta finale
+        len = *i - start;
+        char *out = strndup(input + start, len);
+        return (out);
+    }
     while (input[*i] && input[*i] != ' ' && input[*i] != '\t' &&
            input[*i] != '|' && input[*i] != '<' && input[*i] != '>' &&
            input[*i] != '\'' && input[*i] != '"')
