@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 19:24:01 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/06/17 17:34:51 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/06/30 20:27:17 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,13 @@ static void handle_single_token_quotes(t_token *token)
             i++;  // Salta la virgoletta
             while (token->value[i] && token->value[i] != '"')
             {
+                // Gestisce i caratteri di escape nelle double quotes
+                if (token->value[i] == '\\' && token->value[i + 1])
+                {
+                    process_escape(token->value, &i, result, &j);
+                }
                 // Nelle double quotes, espandi le variabili
-                if (token->value[i] == '$' && token->value[i + 1])
+                else if (token->value[i] == '$' && token->value[i + 1])
                     copy_env_value(token->value, &i, result, &j);
                 else
                     result[j++] = token->value[i++];
