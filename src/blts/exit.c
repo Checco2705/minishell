@@ -45,8 +45,8 @@ int ft_exit(char **args)
     {
         if (!is_valid_number(args[1]))
         {
-            fprintf(stderr, "exit: %s: numeric argument required\n", args[1]);
-            exit(255);
+            fprintf(stderr, "exit: %s: è necessario un argomento numerico\n", args[1]);
+            exit(2);
         }
         code = atoi(args[1]);
         // In bash, exit code è sempre modulo 256 (unsigned byte)

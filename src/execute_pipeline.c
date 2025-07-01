@@ -17,8 +17,16 @@ int execute_pipeline(t_command *commands)
 
     // Se è un singolo comando built-in, eseguilo direttamente
     if (num_cmds == 1 && commands->is_builtin) {
+        if (commands->redir_error) {
+            return 1;
+        }
         execute_builtin(commands);
         return g_state.last_status;
+    }
+    
+    // Se è un singolo comando con errore di redirezione, ritorna errore
+    if (num_cmds == 1 && commands->redir_error) {
+        return 1;
     }
 
     // Altrimenti procedi con la pipeline normale
@@ -139,6 +147,11 @@ void setup_child_pipes(t_command *cmd, int **pipes, int num_cmds, int i)
 
 void execute_child(t_command *cmd)
 {
+    // Se ci sono errori di redirezione, esci con errore
+    if (cmd->redir_error) {
+        exit(1);
+    }
+
     if (cmd->is_builtin) {      // Se è un comando built-in
         execute_builtin(cmd);   // Eseguilo direttamente
         exit(g_state.last_status);  // Esci con status del built-in
