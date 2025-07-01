@@ -149,19 +149,13 @@ char *expand_string(const char *src)
 */
 void expand_variables(t_token **tokens)
 {
-    t_token *curr;
-    char *expanded;
-
-    curr = *tokens;
-    while (curr)
+    // L'espansione è già fatta da handle_quotes
+    // Qui rimuoviamo solo i token vuoti all'inizio di ogni comando (fino al primo pipe)
+    while (*tokens && (*tokens)->type == TOKEN_WORD && (*tokens)->value && strlen((*tokens)->value) == 0)
     {
-        if (curr->type == TOKEN_WORD && curr->value)
-        {
-            expanded = expand_string(curr->value);
-            free(curr->value);
-            curr->value = strdup(expanded);
-            free(expanded);
-        }
-        curr = curr->next;
+        t_token *to_remove = *tokens;
+        *tokens = (*tokens)->next;
+        free(to_remove->value);
+        free(to_remove);
     }
 }
