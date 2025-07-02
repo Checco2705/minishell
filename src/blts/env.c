@@ -1,23 +1,35 @@
-#include "libft.h" // Per ft_putendl_fd
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   env.c                                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/07/01 19:08:01 by ffebbrar          #+#    #+#             */
+/*   Updated: 2025/07/01 23:06:49 by ffebbrar         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "libft.h"
 #include <unistd.h>
-#include <string.h> // Per strncmp
+#include <string.h>
 
-extern char **environ;
+extern char	**environ;
 
-// --- CHECCO: inizio funzione ft_env ---
-// Stampa tutte le variabili d'ambiente usando la funzione della libft
-int ft_env(char **args)
+int	ft_env(char **args)
 {
-    (void)args;
-    int i = 0; // Indice per scorrere l'array
-    while (environ && environ[i]) { // Finché ci sono variabili
-        // Salta COLUMNS e LINES che sono aggiunte da readline
-        if (strncmp(environ[i], "COLUMNS=", 8) != 0 && 
-            strncmp(environ[i], "LINES=", 6) != 0) {
-            ft_putendl_fd(environ[i], 1); // Stampa la variabile su stdout
-        }
-        i++;
-    }
-    return (0);
+	int	i;
+
+	(void)args;
+	i = 0;
+	while (environ && environ[i])
+	{
+		if (strncmp(environ[i], "COLUMNS=", 8) != 0
+			&& strncmp(environ[i], "LINES=", 6) != 0)
+		{
+			ft_putendl_fd(environ[i], 1);
+		}
+		i++;
+	}
+	return (0);
 }
-// --- CHECCO: fine funzione ft_env ---

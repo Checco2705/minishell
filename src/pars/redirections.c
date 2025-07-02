@@ -6,13 +6,41 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 19:24:01 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/06/11 19:40:10 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/02 12:33:05 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 #include <fcntl.h>  // Per i flag O_RDONLY, O_WRONLY, O_CREAT, O_APPEND, O_TRUNC
 #include <errno.h>  // Per errno
+
+/*
+** Chiude un file descriptor esistente se valido.
+*/
+static void	close_existing_fd(int *fd)
+{
+	if (*fd > 0)
+	{
+		if (close(*fd) == -1)
+			perror("minishell: close");
+		*fd = -1;
+	}
+}
+
+/*
+** Gestisce gli errori di apertura file e stampa messaggi appropriati.
+*/
+static void	handle_file_error(const char *filename)
+{
+	if (errno == ENOENT)
+		fprintf(stderr, "minishell: %s: File o directory non esistente\n",
+			filename);
+	else if (errno == EACCES)
+		fprintf(stderr, "minishell: %s: Permesso negato\n", filename);
+	else
+		perror("minishell");
+	g_state.last_status = 1;
+}
 
 /*
 ** Gestisce le redirezioni di input (< e <<).
@@ -27,29 +55,19 @@
 ** - Gestisce gli errori di apertura e chiusura
 ** - Aggiorna il file descriptor di input del comando
 */
-static int handle_input_redirection(t_command *cmd, t_token *curr)
+static int	handle_input_redirection(t_command *cmd, t_token *curr)
 {
-    int fd;
+	int	fd;
 
-    if (cmd->in_fd > 0)
-    {
-        if (close(cmd->in_fd) == -1)
-            perror("minishell: close");
-    }
-    fd = open(curr->next->value, O_RDONLY);
-    if (fd == -1)
-    {
-        if (errno == ENOENT)
-            fprintf(stderr, "minishell: %s: File o directory non esistente\n", curr->next->value);
-        else if (errno == EACCES)
-            fprintf(stderr, "minishell: %s: Permesso negato\n", curr->next->value);
-        else
-            perror("minishell");
-        g_state.last_status = 1;
-        return (-1);
-    }
-    cmd->in_fd = fd;
-    return (0);
+	close_existing_fd(&cmd->in_fd);
+	fd = open(curr->next->value, O_RDONLY);
+	if (fd == -1)
+	{
+		handle_file_error(curr->next->value);
+		return (-1);
+	}
+	cmd->in_fd = fd;
+	return (0);
 }
 
 /*
@@ -65,35 +83,25 @@ static int handle_input_redirection(t_command *cmd, t_token *curr)
 ** - Gestisce gli errori di apertura e chiusura
 ** - Aggiorna il file descriptor di output del comando
 */
-static int handle_output_redirection(t_command *cmd, t_token *curr)
+static int	handle_output_redirection(t_command *cmd, t_token *curr)
 {
-    int flags;
-    int fd;
+	int	flags;
+	int	fd;
 
-    if (cmd->out_fd > 0)
-    {
-        if (close(cmd->out_fd) == -1)
-            perror("minishell: close");
-    }
-    flags = O_WRONLY | O_CREAT;
-    if (curr->type == TOKEN_APPEND)
-        flags |= O_APPEND;
-    else
-        flags |= O_TRUNC;
-    fd = open(curr->next->value, flags, 0644);
-    if (fd == -1)
-    {
-        if (errno == ENOENT)
-            fprintf(stderr, "minishell: %s: File o directory non esistente\n", curr->next->value);
-        else if (errno == EACCES)
-            fprintf(stderr, "minishell: %s: Permesso negato\n", curr->next->value);
-        else
-            perror("minishell");
-        g_state.last_status = 1;
-        return (-1);
-    }
-    cmd->out_fd = fd;
-    return (0);
+	close_existing_fd(&cmd->out_fd);
+	flags = O_WRONLY | O_CREAT;
+	if (curr->type == TOKEN_APPEND)
+		flags |= O_APPEND;
+	else
+		flags |= O_TRUNC;
+	fd = open(curr->next->value, flags, 0644);
+	if (fd == -1)
+	{
+		handle_file_error(curr->next->value);
+		return (-1);
+	}
+	cmd->out_fd = fd;
+	return (0);
 }
 
 /*
@@ -110,19 +118,19 @@ static int handle_output_redirection(t_command *cmd, t_token *curr)
 ** - >> (append)
 ** Chiama le funzioni appropriate in base al tipo di redirezione.
 */
-int handle_redirection(t_command *cmd, t_token *curr)
+int	handle_redirection(t_command *cmd, t_token *curr)
 {
-    if ((curr->type == TOKEN_REDIR_IN || 
-         curr->type == TOKEN_HEREDOC) && curr->next)
-    {
-        if (handle_input_redirection(cmd, curr) == -1)
-            return (-1);
-    }
-    if ((curr->type == TOKEN_REDIR_OUT || 
-         curr->type == TOKEN_APPEND) && curr->next)
-    {
-        if (handle_output_redirection(cmd, curr) == -1)
-            return (-1);
-    }
-    return (0);
+	if ((curr->type == TOKEN_REDIR_IN
+			|| curr->type == TOKEN_HEREDOC) && curr->next)
+	{
+		if (handle_input_redirection(cmd, curr) == -1)
+			return (-1);
+	}
+	if ((curr->type == TOKEN_REDIR_OUT
+			|| curr->type == TOKEN_APPEND) && curr->next)
+	{
+		if (handle_output_redirection(cmd, curr) == -1)
+			return (-1);
+	}
+	return (0);
 }

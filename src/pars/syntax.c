@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 19:24:01 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/06/11 19:40:07 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/02 12:36:40 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,29 +25,29 @@
 ** - Ogni redirezione è seguita da una parola
 ** Se viene trovato un errore, la funzione restituisce 1.
 */
-int check_syntax_errors(t_token *tokens)
+int	check_syntax_errors(t_token *tokens)
 {
-    t_token *curr;
+	t_token	*curr;
 
-    if (!tokens)
-        return (0);
-    if (tokens->type == TOKEN_PIPE)
-        return (1);
-    curr = tokens;
-    while (curr)
-    {
-        if (curr->type == TOKEN_PIPE)
-        {
-            if (!curr->next || curr->next->type == TOKEN_PIPE)
-                return (1);
-        }
-        if (curr->type == TOKEN_REDIR_IN || curr->type == TOKEN_REDIR_OUT ||
-            curr->type == TOKEN_HEREDOC || curr->type == TOKEN_APPEND)
-        {
-            if (!curr->next || curr->next->type != TOKEN_WORD)
-                return (1);
-        }
-        curr = curr->next;
-    }
-    return (0);
+	if (!tokens)
+		return (0);
+	if (tokens->type == TOKEN_PIPE)
+		return (1);
+	curr = tokens;
+	while (curr)
+	{
+		if (curr->type == TOKEN_PIPE)
+		{
+			if (!curr->next || curr->next->type == TOKEN_PIPE)
+				return (1);
+		}
+		if (curr->type == TOKEN_REDIR_IN || curr->type == TOKEN_REDIR_OUT
+			|| curr->type == TOKEN_HEREDOC || curr->type == TOKEN_APPEND)
+		{
+			if (!curr->next || curr->next->type != TOKEN_WORD)
+				return (1);
+		}
+		curr = curr->next;
+	}
+	return (0);
 }

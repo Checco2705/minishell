@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 19:24:01 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/06/17 17:32:28 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/02 11:55:37 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,21 +36,11 @@ static int is_builtin_command(const char *cmd_name)
 }
 
 /*
-** Inizializza un nuovo comando con i suoi argomenti.
+** Inizializza un nuovo comando base.
 ** 
-** @param curr: Il token corrente da cui iniziare l'estrazione
-** @param argc: Puntatore al contatore degli argomenti
-** @param argv: Array dove salvare gli argomenti
 ** @return: Il comando inizializzato
-**
-** La funzione:
-** - Alloca memoria per il comando
-** - Inizializza i file descriptor a -1
-** - Estrae gli argomenti dai token fino al prossimo pipe
-** - Gestisce le redirezioni
-** - Costruisce l'array degli argomenti
 */
-static t_command *init_command(t_token *curr, int *argc, char **argv)
+static t_command *create_command(void)
 {
     t_command *cmd;
 
@@ -58,43 +48,143 @@ static t_command *init_command(t_token *curr, int *argc, char **argv)
     cmd->in_fd = -1;
     cmd->out_fd = -1;
     cmd->redir_error = 0;
+    return (cmd);
+}
+
+/*
+** Processa un token di redirezione.
+** 
+** @param cmd: Il comando corrente
+** @param curr: Puntatore al token corrente
+** @return: Il token successivo dopo la redirezione
+*/
+static t_token *process_redirection(t_command *cmd, t_token *curr)
+{
+    if (handle_redirection(cmd, curr) == -1)
+    {
+        cmd->redir_error = 1;
+        return (NULL);
+    }
+    curr = curr->next; // Salta il token della redirezione
+    if (curr)
+        curr = curr->next; // Salta il nome del file
+    return (curr);
+}
+
+/*
+** Estrae gli argomenti dai token.
+** 
+** @param curr: Il token corrente
+** @param argc: Puntatore al contatore degli argomenti
+** @param argv: Array dove salvare gli argomenti
+** @param cmd: Il comando corrente
+** @return: Il token successivo dopo l'estrazione
+*/
+static t_token *extract_arguments(t_token *curr, int *argc, char **argv, t_command *cmd)
+{
     *argc = 0;
     while (curr && curr->type != TOKEN_PIPE)
     {
         if (curr->type == TOKEN_WORD)
+        {
             argv[(*argc)++] = strdup(curr->value);
+            curr = curr->next;
+        }
         else if (curr->type >= TOKEN_REDIR_IN && curr->type <= TOKEN_APPEND)
         {
-            if (handle_redirection(cmd, curr) == -1)
-            {
-                cmd->redir_error = 1;
-                // Se una redirezione fallisce, fermarsi qui - bash non continua
+            curr = process_redirection(cmd, curr);
+            if (!curr)
                 break;
-            }
-            // Salta il token della redirezione e il file che segue
-            curr = curr->next; // Salta il nome del file
-            if (curr) 
-                curr = curr->next; // Va al token successivo
-            continue; // Non fare curr = curr->next alla fine del loop
         }
-        curr = curr->next;
+        else
+            curr = curr->next;
     }
     argv[*argc] = NULL;
-    cmd->argv = malloc((*argc + 1) * sizeof(char*));
-    for (int i = 0; i < *argc; i++)
-        cmd->argv[i] = argv[i];  // Trasferisce ownership, non copia
-    cmd->argv[*argc] = NULL;
+    return (curr);
+}
+
+/*
+** Finalizza il comando con gli argomenti estratti.
+** 
+** @param cmd: Il comando da finalizzare
+** @param argc: Numero di argomenti
+** @param argv: Array degli argomenti
+** @return: Il comando finalizzato o NULL se vuoto
+*/
+static t_command *finalize_command(t_command *cmd, int argc, char **argv)
+{
+    cmd->argv = malloc((argc + 1) * sizeof(char*));
+    for (int i = 0; i < argc; i++)
+        cmd->argv[i] = argv[i];
+    cmd->argv[argc] = NULL;
     
-    // Se non ci sono argomenti e non ci sono errori di redirezione, libera e restituisci NULL
-    if (*argc == 0 && !cmd->redir_error) {
+    if (argc == 0 && !cmd->redir_error)
+    {
         free(cmd->argv);
         free(cmd);
-        return NULL;
+        return (NULL);
     }
     
-    if (cmd->argv[0])  // Se c'è un comando
-        cmd->is_builtin = is_builtin_command(cmd->argv[0]);  // Verifica se è built-in
+    if (cmd->argv[0])
+        cmd->is_builtin = is_builtin_command(cmd->argv[0]);
     return (cmd);
+}
+
+/*
+** Inizializza un nuovo comando con i suoi argomenti.
+** 
+** @param curr: Il token corrente da cui iniziare l'estrazione
+** @param argc: Puntatore al contatore degli argomenti
+** @param argv: Array dove salvare gli argomenti
+** @return: Il comando inizializzato
+*/
+static t_command *init_command(t_token *curr, int *argc, char **argv)
+{
+    t_command *cmd;
+
+    cmd = create_command();
+    extract_arguments(curr, argc, argv, cmd);
+    return (finalize_command(cmd, *argc, argv));
+}
+
+/*
+** Trova il prossimo token dopo il comando corrente.
+** 
+** @param curr: Il token corrente
+** @return: Il token successivo
+*/
+static t_token *find_next_command(t_token *curr)
+{
+    while (curr && curr->type != TOKEN_PIPE)
+    {
+        if (curr->type >= TOKEN_REDIR_IN && curr->type <= TOKEN_APPEND)
+        {
+            curr = curr->next;
+            if (curr)
+                curr = curr->next;
+        }
+        else
+            curr = curr->next;
+    }
+    if (curr && curr->type == TOKEN_PIPE)
+        curr = curr->next;
+    return (curr);
+}
+
+/*
+** Aggiunge un comando alla lista.
+** 
+** @param head: Puntatore alla testa della lista
+** @param tail: Puntatore alla coda della lista
+** @param cmd: Il comando da aggiungere
+*/
+static void add_command_to_list(t_command **head, t_command **tail, t_command *cmd)
+{
+    if (!*head)
+        *head = cmd;
+    else
+        (*tail)->next = cmd;
+    *tail = cmd;
 }
 
 /*
@@ -102,13 +192,6 @@ static t_command *init_command(t_token *curr, int *argc, char **argv)
 ** 
 ** @param tokens: La lista di token da cui costruire i comandi
 ** @return: La testa della lista dei comandi
-**
-** La funzione:
-** - Crea una lista di comandi separati da pipe
-** - Per ogni comando:
-**   - Inizializza il comando con i suoi argomenti
-**   - Gestisce le redirezioni
-**   - Collega i comandi in pipeline
 */
 t_command *build_commands(t_token *tokens)
 {
@@ -125,30 +208,9 @@ t_command *build_commands(t_token *tokens)
     while (curr)
     {
         cmd = init_command(curr, &argc, argv);
-        
-        // Solo aggiungi il comando se non è NULL
-        if (cmd) {
-            if (!head)
-                head = cmd;
-            else
-                tail->next = cmd;
-            tail = cmd;
-        }
-        
-        // Trova il prossimo pipe o fine lista
-        while (curr && curr->type != TOKEN_PIPE)
-        {
-            if (curr->type >= TOKEN_REDIR_IN && curr->type <= TOKEN_APPEND)
-            {
-                curr = curr->next; // Salta il token redirezione
-                if (curr)
-                    curr = curr->next; // Salta il nome del file
-            }
-            else
-                curr = curr->next;
-        }
-        if (curr && curr->type == TOKEN_PIPE)
-            curr = curr->next;
+        if (cmd)
+            add_command_to_list(&head, &tail, cmd);
+        curr = find_next_command(curr);
     }
     return (head);
 }

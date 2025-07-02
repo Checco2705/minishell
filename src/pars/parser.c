@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parser.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/07/02 11:58:21 by ffebbrar          #+#    #+#             */
+/*   Updated: 2025/07/02 12:01:44 by ffebbrar         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 /*
@@ -13,29 +25,24 @@
 ** 4. Controlla la sintassi
 ** 5. Costruisce i comandi
 */
-t_command *parse_input(const char *line)
+t_command	*parse_input(const char *line)
 {
-    t_token *tokens;
-    t_command *commands;
+	t_token		*tokens;
+	t_command	*commands;
 
-    if (!line || !*line)
-        return (NULL);
-
-    tokens = tokenize(line); /* 1. Tokenizzazione */
-    if (!tokens)
-        return (NULL);
-
-    handle_quotes(tokens); /* 2. Gestione virgolette ed espansione variabili */
-    expand_variables(&tokens); /* 3. Rimozione token vuoti dopo espansione */
-
-    if (check_syntax_errors(tokens)) /* 4. Controllo sintassi */
-    {
-        free_tokens(tokens);
-        return (NULL);
-    }
-
-    commands = build_commands(tokens); /* 5. Costruzione comandi */
-    free_tokens(tokens);
-
-    return (commands);
+	if (!line || !*line)
+		return (NULL);
+	tokens = tokenize(line);
+	if (!tokens)
+		return (NULL);
+	handle_quotes(tokens);
+	expand_variables(&tokens);
+	if (check_syntax_errors(tokens))
+	{
+		free_tokens(tokens);
+		return (NULL);
+	}
+	commands = build_commands(tokens);
+	free_tokens(tokens);
+	return (commands);
 }

@@ -6,12 +6,12 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 19:33:02 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/06/30 20:48:42 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/02 13:04:26 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <ctype.h>  // Per isalnum
+#include <ctype.h>
 
 /*
 ** Gestisce l'espansione della variabile $? (stato di uscita).
@@ -23,16 +23,16 @@
 ** La funzione converte lo stato di uscita dell'ultimo comando (g_state.last_status)
 ** in una stringa e la copia nel buffer risultato.
 */
-static int handle_exit_status(char *dst, int *di)
+static int	handle_exit_status(char *dst, int *di)
 {
-    char status[12];
-    int k;
+	char status[12];
+	int k;
 
-    snprintf(status, sizeof(status), "%d", g_state.last_status);
-    k = 0;
-    while (status[k])
-        dst[(*di)++] = status[k++];
-    return (1);
+	snprintf(status, sizeof(status), "%d", g_state.last_status);
+	k = 0;
+	while (status[k])
+		dst[(*di)++] = status[k++];
+	return (1);
 }
 
 /*
@@ -50,22 +50,22 @@ static int handle_exit_status(char *dst, int *di)
 ** e lo copia nel buffer risultato. Se la variabile non esiste, non viene copiato
 ** nulla nel risultato.
 */
-static int handle_env_var(const char *src, int var_start, int var_len, 
+static int	handle_env_var(const char *src, int var_start, int var_len, 
                          char *dst, int *di, int *si)
 {
-    char var[256];
-    char *val;
+	char	var[256];
+	char	*val;
 
-    strncpy(var, src + var_start, var_len);
-    var[var_len] = 0;
-    val = getenv(var);
-    if (val)
-    {
-        for (int k = 0; val[k]; k++)
-            dst[(*di)++] = val[k];
-    }
-    *si = var_start + var_len;
-    return (1);
+	strncpy(var, src + var_start, var_len);
+	var[var_len] = 0;
+	val = getenv(var);
+	if (val)
+	{
+		for (int k = 0; val[k]; k++)
+			dst[(*di)++] = val[k];
+	}
+	*si = var_start + var_len;
+	return (1);
 }
 
 /*
@@ -81,28 +81,26 @@ static int handle_env_var(const char *src, int var_start, int var_len,
 ** (variabili d'ambiente). Se non viene trovata una variabile valida, la funzione
 ** restituisce 0 e non modifica gli indici.
 */
-int copy_env_value(const char *src, int *si, char *dst, int *di)
+int	copy_env_value(const char *src, int *si, char *dst, int *di)
 {
-    int var_start;
-    int var_len;
+	int	var_start;
+	int	var_len;
 
-    if (src[*si + 1] == '?')
-    {
-        *si += 2;
-        return (handle_exit_status(dst, di));
-    }
-    var_start = *si + 1;
-    var_len = 0;
-    while (src[var_start + var_len] && 
-           (isalnum(src[var_start + var_len]) || 
-            src[var_start + var_len] == '_'))
-        var_len++;
-    if (var_len > 0)
-        return (handle_env_var(src, var_start, var_len, dst, di, si));
-    
-    // Se non c'è una variabile valida dopo $, tratta $ come carattere normale
-    dst[(*di)++] = src[(*si)++];
-    return (1);
+	if (src[*si + 1] == '?')
+	{
+		*si += 2;
+		return (handle_exit_status(dst, di));
+	}
+	var_start = *si + 1;
+	var_len = 0;
+	while (src[var_start + var_len] && 
+			(isalnum(src[var_start + var_len]) || 
+			src[var_start + var_len] == '_'))
+		var_len++;
+	if (var_len > 0)
+		return (handle_env_var(src, var_start, var_len, dst, di, si));
+	dst[(*di)++] = src[(*si)++];
+	return (1);
 }
 
 /*
@@ -116,26 +114,26 @@ int copy_env_value(const char *src, int *si, char *dst, int *di)
 ** La memoria per il risultato viene allocata dinamicamente e deve essere
 ** liberata dal chiamante.
 */
-char *expand_string(const char *src)
+char	*expand_string(const char *src)
 {
-    char *dst;
-    int si;
-    int di;
+	char	*dst;
+	int		si;
+	int		di;
 
-    dst = malloc(4096);
-    si = 0;
-    di = 0;
-    while (src[si])
-    {
-        if (src[si] == '$' && src[si + 1])
-        {
-            if (copy_env_value(src, &si, dst, &di))
-                continue;
-        }
-        dst[di++] = src[si++];
-    }
-    dst[di] = 0;
-    return (dst);
+	dst = malloc(4096);
+	si = 0;
+	di = 0;
+	while (src[si])
+	{
+		if (src[si] == '$' && src[si + 1])
+		{
+			if (copy_env_value(src, &si, dst, &di))
+				continue;
+		}
+		dst[di++] = src[si++];
+	}
+	dst[di] = 0;
+	return (dst);
 }
 
 /*
@@ -147,15 +145,13 @@ char *expand_string(const char *src)
 ** d'ambiente e lo stato di uscita nel loro valore. La memoria viene gestita
 ** correttamente, liberando i vecchi valori e allocando i nuovi.
 */
-void expand_variables(t_token **tokens)
+void	expand_variables(t_token **tokens)
 {
-    // L'espansione è già fatta da handle_quotes
-    // Qui rimuoviamo solo i token vuoti all'inizio di ogni comando (fino al primo pipe)
-    while (*tokens && (*tokens)->type == TOKEN_WORD && (*tokens)->value && strlen((*tokens)->value) == 0)
-    {
-        t_token *to_remove = *tokens;
-        *tokens = (*tokens)->next;
-        free(to_remove->value);
-        free(to_remove);
-    }
+	while (*tokens && (*tokens)->type == TOKEN_WORD && (*tokens)->value && strlen((*tokens)->value) == 0)
+	{
+		t_token *to_remove = *tokens;
+		*tokens = (*tokens)->next;
+		free(to_remove->value);
+		free(to_remove);
+	}
 }
