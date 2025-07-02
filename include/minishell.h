@@ -10,12 +10,17 @@
 #include <readline/history.h>
 #include <string.h>
 
-/* --- Struct globale unico per stato shell --- */
 typedef struct s_shell_state
 {
     volatile sig_atomic_t signal;
     int last_status;
 }   t_shell_state;
+
+typedef struct s_builtin
+{
+	const char	*name;
+	int			(*func)(char **);
+} t_builtin;
 
 typedef struct s_command {
     char   *path;       // percorso dell'eseguibile (già risolto)
@@ -95,6 +100,19 @@ int ft_export(char **args);
 int ft_unset(char **args);
 int ft_env(char **args);
 int ft_exit(char **args);
+
+/* --- Array dei builtin (definito dopo le dichiarazioni) --- */
+static t_builtin builtins[] __attribute__((unused)) =
+{
+	{"echo", ft_echo},
+	{"cd", ft_cd},
+	{"pwd", ft_pwd},
+	{"export", ft_export},
+	{"unset", ft_unset},
+	{"env", ft_env},
+	{"exit", ft_exit},
+	{NULL, NULL}
+};
 
 /* --- Funzioni di pipeline --- */
 int init_pipeline(t_command *commands, int ***pipes, pid_t **pids);
