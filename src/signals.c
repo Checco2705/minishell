@@ -1,5 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   signals.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/02 19:47:36 by ffebbrar          #+#    #+#             */
+/*   Updated: 2025/01/02 21:17:34 by ffebbrar         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#define _POSIX_C_SOURCE 200809L
+
 #include "minishell.h"
 #include <signal.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <string.h>
 #include <stddef.h>
 

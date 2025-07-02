@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/23 11:49:17 by ffebbrar          #+#    #+#             */
-/*   Updated: 2024/01/29 14:31:12 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/02 21:59:40 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 # include <stdio.h>
 
 int		ft_putpointer(unsigned long long ptr);
-int		ft_printf(const char *, ...);
+// int		ft_printf(const char *, ...);
 int		ft_putchar(char c);
 int		ft_putstr(char *str);
 int		ft_putnumb(int n);

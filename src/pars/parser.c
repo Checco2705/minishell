@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 11:58:21 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 12:01:44 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/02 21:10:15 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,8 @@ t_command	*parse_input(const char *line)
 	tokens = tokenize(line);
 	if (!tokens)
 		return (NULL);
-	handle_quotes(tokens);
 	expand_variables(&tokens);
+	handle_quotes(tokens);
 	if (check_syntax_errors(tokens))
 	{
 		free_tokens(tokens);

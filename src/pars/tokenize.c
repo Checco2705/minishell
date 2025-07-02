@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 19:31:43 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 12:44:39 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/02 20:56:49 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,13 +19,13 @@
 ** @param tail: Puntatore alla coda della lista
 ** @param tok: Il token da aggiungere
 */
-static void add_token_to_list(t_token **head, t_token **tail, t_token *tok)
+static void	add_token_to_list(t_token **head, t_token **tail, t_token *tok)
 {
-    if (!*head)
-        *head = tok;
-    else
-        (*tail)->next = tok;
-    *tail = tok;
+	if (!*head)
+		*head = tok;
+	else
+		(*tail)->next = tok;
+	*tail = tok;
 }
 
 /*
@@ -37,19 +37,43 @@ static void add_token_to_list(t_token **head, t_token **tail, t_token *tok)
 ** @param tail: Puntatore alla coda della lista di token
 ** @return: La lunghezza della parola estratta
 */
-static int handle_word(const char *line, int *i, t_token **head, t_token **tail)
+static int	handle_word(const char *line, int *i, t_token **head,
+	t_token **tail)
 {
-    char *word;
-    int len;
+	char	*word;
+	int		len;
 
-    word = extract_word(line, i);
-    if (!word)
-        return (0);
-    len = strlen(word);
-    if (len > 0)
-        add_token_to_list(head, tail, create_token(word, TOKEN_WORD));
-    free(word);
-    return (len);
+	word = extract_word(line, i);
+	if (!word)
+		return (0);
+	len = strlen(word);
+	if (len > 0)
+		add_token_to_list(head, tail, create_token(word, TOKEN_WORD));
+	free(word);
+	return (len);
+}
+
+static void	skip_whitespace(const char *line, int *i)
+{
+	while (line[*i] == ' ' || line[*i] == '\t')
+		(*i)++;
+}
+
+static void	process_token(const char *line, int *i, t_token **head,
+	t_token **tail)
+{
+	t_token	*tok;
+
+	if (line[*i] == '\'' || line[*i] == '"')
+		handle_word(line, i, head, tail);
+	else if (is_operator(line, *i))
+	{
+		tok = handle_redirection_operator(line, i);
+		if (tok)
+			add_token_to_list(head, tail, tok);
+	}
+	else
+		handle_word(line, i, head, tail);
 }
 
 /*
@@ -58,42 +82,23 @@ static int handle_word(const char *line, int *i, t_token **head, t_token **tail)
 ** @param line: La stringa da tokenizzare
 ** @return: La testa della lista di token
 */
-t_token *tokenize(const char *line)
+t_token	*tokenize(const char *line)
 {
-    t_token *head;
-    t_token *tail;
-    int i;
+	t_token	*head;
+	t_token	*tail;
+	int		i;
 
-    if (!line)
-        return (NULL);
-    head = NULL;
-    tail = NULL;
-    i = 0;
-    while (line[i])
-    {
-        while (line[i] == ' ' || line[i] == '\t')
-            i++;
-        if (!line[i])
-            break;
-        
-        // Prima controlla se inizia con virgolette (priorità alle virgolette)
-        if (line[i] == '\'' || line[i] == '"')
-        {
-            handle_word(line, &i, &head, &tail);
-            continue;
-        }
-        
-        // Poi controlla se è un operatore (solo se NON siamo in virgolette)
-        if (is_operator(line, i))
-        {
-            t_token *tok = handle_redirection_operator(line, &i);
-            if (tok)
-                add_token_to_list(&head, &tail, tok);
-            continue;
-        }
-        
-        // Infine gestisce le parole normali
-        handle_word(line, &i, &head, &tail);
-    }
-    return (head);
+	if (!line)
+		return (NULL);
+	head = NULL;
+	tail = NULL;
+	i = 0;
+	while (line[i])
+	{
+		skip_whitespace(line, &i);
+		if (!line[i])
+			break ;
+		process_token(line, &i, &head, &tail);
+	}
+	return (head);
 }

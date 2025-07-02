@@ -6,19 +6,27 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/01 23:18:19 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 11:50:38 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/02 20:10:41 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-extern int	ft_echo(char **args);
-extern int	ft_cd(char **args);
-extern int	ft_pwd(char **args);
-extern int	ft_export(char **args);
-extern int	ft_unset(char **args);
-extern int	ft_env(char **args);
-extern int	ft_exit(char **args);
+t_builtin	*get_builtins(void)
+{
+	static t_builtin	builtins[] = {
+	{"echo", ft_echo},
+	{"cd", ft_cd},
+	{"pwd", ft_pwd},
+	{"export", ft_export},
+	{"unset", ft_unset},
+	{"env", ft_env},
+	{"exit", ft_exit},
+	{NULL, NULL}
+	};
+
+	return (builtins);
+}
 
 static void	save_std_fds(int *saved_stdin, int *saved_stdout, t_command *cmd)
 {
@@ -52,11 +60,13 @@ static void	restore_std_fds(int saved_stdin, int saved_stdout)
 
 static int	run_builtin_command(const char *cmd_name, char **argv)
 {
-	int		i;
-	int		result;
+	int			i;
+	int			result;
+	t_builtin	*builtins;
 
 	i = 0;
 	result = 1;
+	builtins = get_builtins();
 	while (builtins[i].name != NULL)
 	{
 		if (strcmp(cmd_name, builtins[i].name) == 0)

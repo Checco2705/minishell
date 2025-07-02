@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 19:24:01 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/01 19:51:34 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/02 20:24:09 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ void	free_commands(t_command *cmds)
 {
 	t_command	*curr;
 	t_command	*next;
+	int			i;
 
 	curr = cmds;
 	while (curr)
@@ -24,8 +25,12 @@ void	free_commands(t_command *cmds)
 		next = curr->next;
 		if (curr->argv)
 		{
-			for (int i = 0; curr->argv[i]; i++)
+			i = 0;
+			while (curr->argv[i])
+			{
 				free(curr->argv[i]);
+				i++;
+			}
 			free(curr->argv);
 		}
 		if (curr->path)

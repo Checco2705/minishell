@@ -5,153 +5,106 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/11 19:33:02 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 13:04:26 by ffebbrar         ###   ########.fr       */
+/*   Created: 2025/01/02 19:47:36 by ffebbrar          #+#    #+#             */
+/*   Updated: 2025/07/02 22:20:32 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 #include <ctype.h>
 
-/*
-** Gestisce l'espansione della variabile $? (stato di uscita).
-** 
-** @param dst: Buffer dove salvare il risultato
-** @param di: Puntatore all'indice corrente nel buffer risultato
-** @return: 1 se l'espansione è avvenuta con successo
-**
-** La funzione converte lo stato di uscita dell'ultimo comando (g_state.last_status)
-** in una stringa e la copia nel buffer risultato.
-*/
-static int	handle_exit_status(char *dst, int *di)
-{
-	char status[12];
-	int k;
-
-	snprintf(status, sizeof(status), "%d", g_state.last_status);
-	k = 0;
-	while (status[k])
-		dst[(*di)++] = status[k++];
-	return (1);
-}
-
-/*
-** Gestisce l'espansione di una variabile d'ambiente.
-** 
-** @param src: La stringa sorgente contenente la variabile
-** @param var_start: Indice di inizio del nome della variabile
-** @param var_len: Lunghezza del nome della variabile
-** @param dst: Buffer dove salvare il risultato
-** @param di: Puntatore all'indice corrente nel buffer risultato
-** @param si: Puntatore all'indice corrente nella stringa sorgente
-** @return: 1 se l'espansione è avvenuta con successo
-**
-** La funzione estrae il nome della variabile, ottiene il suo valore usando getenv
-** e lo copia nel buffer risultato. Se la variabile non esiste, non viene copiato
-** nulla nel risultato.
-*/
-static int	handle_env_var(const char *src, int var_start, int var_len, 
-                         char *dst, int *di, int *si)
-{
-	char	var[256];
-	char	*val;
-
-	strncpy(var, src + var_start, var_len);
-	var[var_len] = 0;
-	val = getenv(var);
-	if (val)
-	{
-		for (int k = 0; val[k]; k++)
-			dst[(*di)++] = val[k];
-	}
-	*si = var_start + var_len;
-	return (1);
-}
-
-/*
-** Espande $VAR e $? in una stringa.
-** 
-** @param src: La stringa sorgente
-** @param si: Puntatore all'indice corrente nella stringa sorgente
-** @param dst: Buffer dove salvare il risultato
-** @param di: Puntatore all'indice corrente nel buffer risultato
-** @return: 1 se l'espansione è avvenuta con successo, 0 altrimenti
-**
-** La funzione gestisce sia l'espansione di $? (stato di uscita) che di $VAR
-** (variabili d'ambiente). Se non viene trovata una variabile valida, la funzione
-** restituisce 0 e non modifica gli indici.
-*/
 int	copy_env_value(const char *src, int *si, char *dst, int *di)
 {
 	int	var_start;
 	int	var_len;
+	int	chars_written;
 
-	if (src[*si + 1] == '?')
+	if (src[*si] == '$' && src[*si + 1] == '?')
 	{
 		*si += 2;
 		return (handle_exit_status(dst, di));
 	}
-	var_start = *si + 1;
-	var_len = 0;
-	while (src[var_start + var_len] && 
-			(isalnum(src[var_start + var_len]) || 
-			src[var_start + var_len] == '_'))
-		var_len++;
-	if (var_len > 0)
-		return (handle_env_var(src, var_start, var_len, dst, di, si));
+	if (src[*si] == '$' && (isalpha(src[*si + 1]) || src[*si + 1] == '_'))
+	{
+		(*si)++;
+		var_start = *si;
+		var_len = get_var_length(src, var_start);
+		*si += var_len;
+		chars_written = handle_env_var(src, var_start, var_len, dst + *di);
+		*di += chars_written;
+		return (1);
+	}
 	dst[(*di)++] = src[(*si)++];
-	return (1);
+	return (0);
 }
 
-/*
-** Espande le variabili in una stringa.
-** 
-** @param src: La stringa sorgente
-** @return: Una nuova stringa con le variabili espanse
-**
-** La funzione crea un nuovo buffer e copia la stringa sorgente, espandendo
-** tutte le variabili d'ambiente ($VAR) e lo stato di uscita ($?) che trova.
-** La memoria per il risultato viene allocata dinamicamente e deve essere
-** liberata dal chiamante.
-*/
-char	*expand_string(const char *src)
+char	*expand_string(const char *str)
 {
-	char	*dst;
+	char	*result;
 	int		si;
 	int		di;
+	char	in_quotes;
 
-	dst = malloc(4096);
+	if (!str)
+		return (NULL);
+	result = malloc(4096);
+	if (!result)
+		return (NULL);
 	si = 0;
 	di = 0;
-	while (src[si])
+	in_quotes = 0;
+	while (str[si])
 	{
-		if (src[si] == '$' && src[si + 1])
-		{
-			if (copy_env_value(src, &si, dst, &di))
-				continue;
-		}
-		dst[di++] = src[si++];
+		if ((str[si] == '\'' || str[si] == '"') && !in_quotes)
+			in_quotes = str[si];
+		else if (str[si] == in_quotes)
+			in_quotes = 0;
+		if (in_quotes == '\''
+			|| !copy_env_value(str, &si, result, &di))
+			result[di++] = str[si++];
 	}
-	dst[di] = 0;
-	return (dst);
+	result[di] = '\0';
+	return (result);
 }
 
-/*
-** Espande le variabili in tutti i token.
-** 
-** @param tokens: Puntatore alla lista di token da processare
-**
-** La funzione itera su tutti i token di tipo TOKEN_WORD e espande le variabili
-** d'ambiente e lo stato di uscita nel loro valore. La memoria viene gestita
-** correttamente, liberando i vecchi valori e allocando i nuovi.
-*/
+static void	remove_empty_token(t_token **tokens, t_token *prev,
+	t_token **current)
+{
+	t_token	*to_remove;
+
+	to_remove = *current;
+	if (prev)
+		prev->next = (*current)->next;
+	else
+		*tokens = (*current)->next;
+	*current = (*current)->next;
+	free(to_remove->value);
+	free(to_remove);
+}
+
 void	expand_variables(t_token **tokens)
 {
-	while (*tokens && (*tokens)->type == TOKEN_WORD && (*tokens)->value && strlen((*tokens)->value) == 0)
+	t_token	*current;
+	t_token	*prev;
+	char	*old_value;
+
+	current = *tokens;
+	prev = NULL;
+	while (current)
 	{
-		t_token *to_remove = *tokens;
-		*tokens = (*tokens)->next;
-		free(to_remove->value);
-		free(to_remove);
+		if (current->type == TOKEN_WORD)
+		{
+			old_value = current->value;
+			current->value = expand_string(current->value);
+			if (old_value)
+				free(old_value);
+			if (current->value && strlen(current->value) == 0)
+			{
+				remove_empty_token(tokens, prev, &current);
+				continue ;
+			}
+		}
+		prev = current;
+		current = current->next;
 	}
 }
