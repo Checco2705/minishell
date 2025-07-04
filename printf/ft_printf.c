@@ -6,13 +6,13 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/23 15:45:27 by ffebbrar          #+#    #+#             */
-/*   Updated: 2024/02/19 18:27:34 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 14:01:08 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-int	ft_argoment(va_list *args, const char format)
+static int	ft_handle_format(va_list *args, const char format)
 {
 	if (format == 'c')
 		return (ft_putchar(va_arg(*args, int)));
@@ -46,7 +46,7 @@ int	ft_printf(const char *format, ...)
 	{
 		if (format[i] == '%')
 		{
-			len += ft_argoment(&args, format[i + 1]);
+			len += ft_handle_format(&args, format[i + 1]);
 			i++;
 		}
 		else

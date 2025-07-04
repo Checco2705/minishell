@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/01 23:18:19 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 20:10:41 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:16:44 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,13 +67,11 @@ static int	run_builtin_command(const char *cmd_name, char **argv)
 	i = 0;
 	result = 1;
 	builtins = get_builtins();
-	while (builtins[i].name != NULL)
+	while (builtins[i].name)
 	{
-		if (strcmp(cmd_name, builtins[i].name) == 0)
-		{
-			result = builtins[i].func(argv);
-			break ;
-		}
+		if (ft_strncmp(cmd_name, builtins[i].name,
+				ft_strlen(builtins[i].name) + 1) == 0)
+			return (builtins[i].func(argv));
 		i++;
 	}
 	return (result);

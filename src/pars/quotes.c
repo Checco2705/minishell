@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 20:31:39 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 20:32:35 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:11:51 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ static void	handle_single_token_quotes(t_token *token)
 	if (!result)
 		return ;
 	free(token->value);
-	token->value = strdup(result);
+	token->value = ft_strdup(result);
 	free(result);
 }
 

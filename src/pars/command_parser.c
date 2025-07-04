@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/02 20:30:00 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 20:21:17 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:11:48 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ static t_token	*extract_arguments(t_token *curr, int *argc, char **argv,
 	{
 		if (curr->type == TOKEN_WORD)
 		{
-			argv[(*argc)++] = strdup(curr->value);
+			argv[(*argc)++] = ft_strdup(curr->value);
 			curr = curr->next;
 		}
 		else if (curr->type >= TOKEN_REDIR_IN && curr->type <= TOKEN_APPEND)

@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 00:00:00 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 20:47:39 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 15:07:51 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ char	*extract_quoted_word(const char *input, int *i, char quote)
 			len++;
 		}
 	}
-	out = strndup(input + start, len);
+	out = ft_substr(input, start, len);
 	if (input[*i] == quote)
 		(*i)++;
 	return (out);
@@ -88,6 +88,6 @@ char	*extract_word(const char *input, int *i)
 			(*i)++;
 	}
 	len = *i - start;
-	out = strndup(input + start, len);
+	out = ft_substr(input, start, len);
 	return (out);
 }

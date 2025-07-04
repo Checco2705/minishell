@@ -6,14 +6,13 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/01 19:17:03 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/01 23:08:26 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 14:47:46 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
+#include "minishell.h"
+#include "libft.h"
 #include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
 
 // Controlla se una stringa rappresenta un numero valido (con possibile segno)
 static int	is_valid_number(const char *str)
@@ -29,7 +28,7 @@ static int	is_valid_number(const char *str)
 		return (0);
 	while (str[i])
 	{
-		if (!isdigit(str[i]))
+		if (!ft_isdigit(str[i]))
 			return (0);
 		i++;
 	}
@@ -43,18 +42,18 @@ int	ft_exit(char **args)
 	code = 0;
 	if (args[1] && args[2])
 	{
-		fprintf(stderr, "exit: too many arguments\n");
+		ft_fprintf(2, "exit: troppi argomenti\n");
 		return (1);
 	}
 	if (args[1])
 	{
 		if (!is_valid_number(args[1]))
 		{
-			fprintf(stderr, "exit: %s: è necessario un argomento numerico\n",
+			ft_fprintf(2, "exit: %s: è necessario un argomento numerico\n",
 				args[1]);
 			exit(2);
 		}
-		code = atoi(args[1]);
+		code = ft_atoi(args[1]);
 		code = code & 0xFF;
 	}
 	exit(code);

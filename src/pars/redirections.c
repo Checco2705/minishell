@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 19:24:01 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 12:33:05 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 14:06:03 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,10 +33,15 @@ static void	close_existing_fd(int *fd)
 static void	handle_file_error(const char *filename)
 {
 	if (errno == ENOENT)
-		fprintf(stderr, "minishell: %s: File o directory non esistente\n",
-			filename);
-	else if (errno == EACCES)
-		fprintf(stderr, "minishell: %s: Permesso negato\n", filename);
+	{
+		if (access(filename, F_OK) == -1)
+		{
+			ft_fprintf(2, "minishell: %s: File o directory non esistente\n",
+				filename);
+			return ;
+		}
+		ft_fprintf(2, "minishell: %s: Permesso negato\n", filename);
+	}
 	else
 		perror("minishell");
 	g_state.last_status = 1;

@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 21:43:23 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 21:43:23 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 15:28:11 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,29 +21,43 @@ void	cleanup_readline_and_exit(void)
 	rl_set_prompt("");
 }
 
+static void	handle_eof(int is_interactive)
+{
+	if (is_interactive)
+		write(1, "exit\n", 5);
+}
+
+static void	process_command_line(char *line)
+{
+	t_command	*commands;
+
+	if (*line)
+		add_history(line);
+	g_state.signal = 0;
+	commands = parse_input(line);
+	if (!commands)
+		return ;
+	g_state.last_status = execute_pipeline(commands);
+	cleanup_after_execution(commands);
+}
+
 int	main(void)
 {
 	char		*line;
-	t_command	*commands;
+	int			is_interactive;
 
 	setup_signals();
+	is_interactive = isatty(STDIN_FILENO);
 	while (1)
 	{
 		line = readline("minishell$ ");
 		if (!line)
 		{
-			printf("exit\n");
+			handle_eof(is_interactive);
 			break ;
 		}
-		if (*line)
-			add_history(line);
-		g_state.signal = 0;
-		commands = parse_input(line);
+		process_command_line(line);
 		free(line);
-		if (!commands)
-			continue ;
-		execute_pipeline(commands);
-		cleanup_after_execution(commands);
 	}
 	cleanup_readline_and_exit();
 	return (g_state.last_status);

@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 19:24:01 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 20:51:52 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:11:40 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ t_token	*create_token(const char *val, t_token_type type)
 	tok = malloc(sizeof(t_token));
 	if (!tok)
 		return (NULL);
-	tok->value = strdup(val);
+	tok->value = ft_strdup(val);
 	tok->type = type;
 	tok->next = NULL;
 	return (tok);

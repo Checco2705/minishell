@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/02 19:47:36 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 22:03:20 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 16:14:21 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,14 @@
 # include <readline/readline.h>
 # include <readline/history.h>
 # include <string.h>
+# include "libft.h"
+# include "../printf/ft_printf.h"
 
 typedef struct s_shell_state
 {
 	volatile sig_atomic_t	signal;
 	int						last_status;
+	char					**local_env;
 }	t_shell_state;
 
 typedef struct s_builtin
@@ -123,6 +126,12 @@ t_token		*find_next_command(t_token *curr);
 
 /* --- Funzioni di risoluzione percorsi --- */
 char		*find_executable(const char *cmd);
+char		*get_next_path_token(char **path_ptr);
+int			is_executable(const char *path);
+char		*build_path_string(const char *dir, const char *cmd);
+char		*build_and_check_path(const char *dir, const char *cmd);
+char		*handle_absolute_path(const char *cmd);
+char		*search_in_path(const char *cmd, char *path);
 
 /* --- Funzioni built-in --- */
 int			ft_echo(char **args);
@@ -133,7 +142,33 @@ int			ft_unset(char **args);
 int			ft_env(char **args);
 int			ft_exit(char **args);
 
+// Environment management
+int			ft_setenv(const char *name, const char *value, int overwrite);
+int			ft_unsetenv(const char *name);
+char		*ft_getenv(const char *name);
+char		**ft_get_environ(void);
+int			is_valid_identifier(const char *name);
+
+/* --- Environment helper functions --- */
+char		**copy_environ_vars(void);
+char		**get_static_env(void);
+void		set_static_env(char **new_env);
+char		**get_our_environ(void);
+void		set_our_environ(char **new_env);
+char		*create_env_string(const char *name, const char *value);
+int			find_env_index(const char *name);
+int			count_env_vars(void);
+int			remove_single_var(void);
+
 t_builtin	*get_builtins(void);
+
+/* --- Funzioni export --- */
+void		print_exported_vars(void);
+int			compare_env_vars(const void *a, const void *b);
+void		print_var_without_value(char *env_var, char *eq_pos);
+void		print_var_with_empty_value(char *env_var, char *eq_pos);
+void		print_var_with_value(char *env_var, char *eq_pos);
+void		print_single_var(char *env_var);
 
 /* --- Funzioni di pipeline --- */
 int			init_pipeline(t_command *commands, int ***pipes, pid_t **pids);

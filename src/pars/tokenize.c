@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/11 19:31:43 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 20:56:49 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:03:41 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ static int	handle_word(const char *line, int *i, t_token **head,
 	word = extract_word(line, i);
 	if (!word)
 		return (0);
-	len = strlen(word);
+	len = ft_strlen(word);
 	if (len > 0)
 		add_token_to_list(head, tail, create_token(word, TOKEN_WORD));
 	free(word);

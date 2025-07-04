@@ -6,13 +6,18 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/01 19:34:54 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/01 23:11:56 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 14:56:56 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <unistd.h>
 #include <limits.h>
+#include <sys/param.h>
 #include "libft.h"
+
+#ifndef PATH_MAX
+# define PATH_MAX 4096
+#endif
 
 // --- CHECCO: inizio funzione ft_pwd ---
 // Stampa la directory corrente

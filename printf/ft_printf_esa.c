@@ -6,13 +6,13 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/23 13:10:16 by ffebbrar          #+#    #+#             */
-/*   Updated: 2024/01/27 18:36:46 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 14:01:58 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-int	ft_esalen(unsigned int n)
+int	ft_esalen(unsigned long long n)
 {
 	int	len;
 
@@ -25,7 +25,20 @@ int	ft_esalen(unsigned int n)
 	return (len);
 }
 
-void	ft_printesa(unsigned int n, const char format)
+static void	ft_print_hex_char(unsigned long long n, const char format)
+{
+	if (n <= 9)
+		ft_putchar((n + '0'));
+	else
+	{
+		if (format == 'x')
+			ft_putchar((n - 10 + 'a'));
+		if (format == 'X')
+			ft_putchar((n - 10 + 'A'));
+	}
+}
+
+void	ft_printesa(unsigned long long n, const char format)
 {
 	if (n >= 16)
 	{
@@ -33,20 +46,10 @@ void	ft_printesa(unsigned int n, const char format)
 		ft_printesa(n % 16, format);
 	}
 	else
-	{
-		if (n <= 9)
-			ft_putchar((n + '0'));
-		else
-		{
-			if (format == 'x')
-				ft_putchar((n - 10 + 'a'));
-			if (format == 'X')
-				ft_putchar((n - 10 + 'A'));
-		}
-	}
+		ft_print_hex_char(n, format);
 }
 
-int	ft_putesa(unsigned int n, const char type)
+int	ft_putesa(unsigned long long n, const char type)
 {
 	if (n == 0)
 		return (write(1, "0", 1));

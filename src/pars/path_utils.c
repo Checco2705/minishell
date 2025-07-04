@@ -1,38 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   echo.c                                             :+:      :+:    :+:   */
+/*   path_utils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/01 18:47:46 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/04 13:12:31 by ffebbrar         ###   ########.fr       */
+/*   Created: 2025/07/04 15:40:00 by ffebbrar          #+#    #+#             */
+/*   Updated: 2025/07/04 15:43:46 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h>
-#include "libft.h"
+#include "minishell.h"
 
-int	ft_echo(char **args)
+/*
+** Trova il prossimo token separato da ':'
+*/
+char	*get_next_path_token(char **path_ptr)
 {
-	int	i;
-	int	n_option;
+	char	*start;
+	char	*end;
 
-	i = 1;
-	n_option = 0;
-	while (args[i] && ft_strncmp(args[i], "-n", 3) == 0)
+	if (!*path_ptr || !**path_ptr)
+		return (NULL);
+	start = *path_ptr;
+	end = start;
+	while (*end && *end != ':')
+		end++;
+	if (*end == ':')
 	{
-		n_option = 1;
-		i++;
+		*end = '\0';
+		*path_ptr = end + 1;
 	}
-	while (args[i])
-	{
-		write(1, args[i], ft_strlen(args[i]));
-		if (args[i + 1])
-			write(1, " ", 1);
-		i++;
-	}
-	if (!n_option)
-		write(1, "\n", 1);
-	return (0);
+	else
+		*path_ptr = end;
+	return (start);
 }

@@ -6,12 +6,13 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/02 19:47:36 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 22:20:32 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 14:42:19 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <ctype.h>
+#include "libft.h"
+#include <stdlib.h>
 
 int	copy_env_value(const char *src, int *si, char *dst, int *di)
 {
@@ -24,7 +25,7 @@ int	copy_env_value(const char *src, int *si, char *dst, int *di)
 		*si += 2;
 		return (handle_exit_status(dst, di));
 	}
-	if (src[*si] == '$' && (isalpha(src[*si + 1]) || src[*si + 1] == '_'))
+	if (src[*si] == '$' && (ft_isalpha(src[*si + 1]) || src[*si + 1] == '_'))
 	{
 		(*si)++;
 		var_start = *si;
@@ -98,7 +99,7 @@ void	expand_variables(t_token **tokens)
 			current->value = expand_string(current->value);
 			if (old_value)
 				free(old_value);
-			if (current->value && strlen(current->value) == 0)
+			if (current->value && ft_strlen(current->value) == 0)
 			{
 				remove_empty_token(tokens, prev, &current);
 				continue ;

@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 21:43:23 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 22:01:22 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:03:08 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ static int	handle_single_command(t_command *commands)
 		return (g_state.last_status);
 	}
 	if (!commands->argv || !commands->argv[0]
-		|| strlen(commands->argv[0]) == 0)
+		|| ft_strlen(commands->argv[0]) == 0)
 	{
 		g_state.last_status = 0;
 		return (0);

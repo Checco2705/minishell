@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/02 20:30:00 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/02 20:19:43 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:16:22 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,8 @@ int	is_builtin_command(const char *cmd_name)
 	i = 0;
 	while (builtins[i].name)
 	{
-		if (strcmp(cmd_name, builtins[i].name) == 0)
+		if (ft_strncmp(cmd_name, builtins[i].name,
+				ft_strlen(builtins[i].name) + 1) == 0)
 			return (1);
 		i++;
 	}

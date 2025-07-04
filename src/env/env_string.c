@@ -1,37 +1,42 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   path_resolution.c                                  :+:      :+:    :+:   */
+/*   env_string.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/02 12:02:23 by ffebbrar          #+#    #+#             */
-/*   Updated: 2025/07/04 15:44:49 by ffebbrar         ###   ########.fr       */
+/*   Created: 2025/07/04 15:35:00 by ffebbrar          #+#    #+#             */
+/*   Updated: 2025/07/04 15:36:17 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <string.h>
-#include <sys/stat.h>
+#include "libft.h"
+#include <stdlib.h>
 
-/*
-** Cerca un eseguibile nei percorsi specificati in PATH
-** Ritorna il percorso completo se trovato, NULL altrimenti
-*/
-char	*find_executable(const char *cmd)
+char	*create_env_string(const char *name, const char *value)
 {
-	char	*path_env;
-	char	*path;
 	char	*result;
+	int		name_len;
+	int		value_len;
+	int		i;
+	int		j;
 
-	result = handle_absolute_path(cmd);
-	if (result != (char *)-1)
-		return (result);
-	path_env = ft_getenv("PATH");
-	if (!path_env)
+	name_len = ft_strlen(name);
+	value_len = ft_strlen(value);
+	result = malloc(name_len + value_len + 2);
+	if (!result)
 		return (NULL);
-	path = ft_strdup(path_env);
-	if (!path)
-		return (NULL);
-	return (search_in_path(cmd, path));
+	i = 0;
+	while (i < name_len)
+	{
+		result[i] = name[i];
+		i++;
+	}
+	result[i++] = '=';
+	j = 0;
+	while (j < value_len)
+		result[i++] = value[j++];
+	result[i] = '\0';
+	return (result);
 }
