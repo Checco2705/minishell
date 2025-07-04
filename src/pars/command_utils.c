@@ -35,9 +35,10 @@ t_command	*create_command(void)
 {
 	t_command	*cmd;
 
-	cmd = calloc(1, sizeof(t_command));
+	cmd = malloc(sizeof(t_command));
 	if (!cmd)
 		return (NULL);
+	ft_memset(cmd, 0, sizeof(t_command));
 	cmd->in_fd = -1;
 	cmd->out_fd = -1;
 	cmd->redir_error = 0;
