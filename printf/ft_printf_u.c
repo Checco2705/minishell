@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 15:36:35 by ffebbrar          #+#    #+#             */
-/*   Updated: 2024/01/29 14:30:05 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:50:12 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ char	*ft_utoa(unsigned int n)
 	int		len;
 
 	len = ft_len_num(n);
-	num = (char *)malloc((len + 1) * sizeof(char *));
+	num = (char *)malloc((len + 1) * sizeof(char));
 	if (!num)
 		return (NULL);
 	num[len] = '\0';
@@ -51,7 +51,7 @@ int	ft_putuns(unsigned int n)
 
 	len = 0;
 	if (n == 0)
-		len += write (1, "0", 1);
+		len += write(1, "0", 1);
 	else
 	{
 		num = ft_utoa(n);

@@ -5,30 +5,32 @@
 #                                                     +:+ +:+         +:+      #
 #    By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/01/23 14:39:54 by ffebbrar          #+#    #+#              #
-#    Updated: 2024/01/27 19:20:57 by ffebbrar         ###   ########.fr        #
+#    Created: 2024/01/23 15:45:27 by ffebbrar          #+#    #+#              #
+#    Updated: 2025/07/04 14:01:29 by ffebbrar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = libftprintf.a
-
-SRC = ft_printf_p.c ft_printf_esa.c ft_printf_fun.c ft_printf_u.c ft_printf.c
-AR = ar
-OBJ = $(SRC:.c=.o)
 CC = gcc
+CFLAGS = -Wall -Wextra -Werror
 
-FLAGS = -Wall -Wextra -Werror
+SRCDIR = .
+OBJDIR = .
+
+SRCS = ft_printf.c ft_printf_fun.c ft_printf_u.c ft_printf_p.c ft_printf_esa.c ft_printf_fd.c ft_printf_fd_utils.c
+
+OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 
 all: $(NAME)
 
-$(NAME): $(OBJ)
-	$(AR) rcs $(NAME) $(OBJ)
+$(NAME): $(OBJS)
+	ar rcs $(NAME) $(OBJS)
 
-%.o: %.c
-	$(CC) $(FLAGS) -c $< -o $@
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJS)
 
 fclean: clean
 	rm -f $(NAME)

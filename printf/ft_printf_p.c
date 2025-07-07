@@ -6,7 +6,7 @@
 /*   By: ffebbrar <ffebbrar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 14:02:08 by ffebbrar          #+#    #+#             */
-/*   Updated: 2024/01/29 15:25:56 by ffebbrar         ###   ########.fr       */
+/*   Updated: 2025/07/04 13:50:33 by ffebbrar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,10 +49,10 @@ int	ft_putpointer(unsigned long long ptr)
 	len = 0;
 	if (ptr == 0)
 	{
-		len += write (1, "0x0", 3);
+		len += write(1, "0x0", 3);
 		return (len);
 	}
-	len = write (1, "0x", 2);
+	len = write(1, "0x", 2);
 	len += ft_printpointer(ptr);
 	return (len);
 }
