@@ -70,6 +70,12 @@ typedef struct s_token
 
 extern t_shell_state	g_state;
 
+int			should_expand(const char *str, int si, int single_q, int double_q);
+char		*expand_string(const char *str);
+int			process_char_in_expansion(const char *str, int *si, char *result,
+				int *di);
+int			copy_env_value(const char *src, int *si, char *dst, int *di);
+
 int			wait_for_single_child(pid_t pid);
 /* --- Funzioni user (Parte esecuzione & segnali) --- */
 void		setup_signals(void);
@@ -104,6 +110,7 @@ char		*process_token_quotes(char *src);
 int			copy_env_value(const char *src, int *si, char *dst, int *di);
 void		expand_variables(t_token **tokens);
 char		*expand_string(const char *str);
+char		*expand_string_respecting_single_quotes(const char *str);
 
 /* --- Funzioni utility per variabili --- */
 int			handle_exit_status(char *dst, int *di);

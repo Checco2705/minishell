@@ -14,54 +14,38 @@
 #include "libft.h"
 #include <stdlib.h>
 
-int	copy_env_value(const char *src, int *si, char *dst, int *di)
+int	should_skip_quote(char c, int single_q, int double_q)
 {
-	int	var_start;
-	int	var_len;
-	int	chars_written;
-
-	if (src[*si] == '$' && src[*si + 1] == '?')
-	{
-		*si += 2;
-		return (handle_exit_status(dst, di));
-	}
-	if (src[*si] == '$' && (ft_isalpha(src[*si + 1]) || src[*si + 1] == '_'))
-	{
-		(*si)++;
-		var_start = *si;
-		var_len = get_var_length(src, var_start);
-		*si += var_len;
-		chars_written = handle_env_var(src, var_start, var_len, dst + *di);
-		*di += chars_written;
+	if ((c == '\'' && !double_q) || (c == '"' && !single_q))
 		return (1);
-	}
-	dst[(*di)++] = src[(*si)++];
 	return (0);
 }
 
-static int	process_char_in_expansion(const char *str, int *si, char *result,
-	int *di)
+void	update_quote_state(char c, int *single_q, int *double_q)
 {
-	char	in_quotes;
-
-	in_quotes = 0;
-	if ((str[*si] == '\'' || str[*si] == '"') && !in_quotes)
-		in_quotes = str[*si];
-	else if (str[*si] == in_quotes)
-		in_quotes = 0;
-	if (in_quotes == '\'')
+	if (c == '\'' && !(*double_q))
 	{
-		result[(*di)++] = str[(*si)++];
-		return (1);
+		if (*single_q == 0)
+			*single_q = 1;
+		else
+			*single_q = 0;
 	}
-	return (copy_env_value(str, si, result, di));
+	else if (c == '"' && !(*single_q))
+	{
+		if (*double_q == 0)
+			*double_q = 1;
+		else
+			*double_q = 0;
+	}
 }
 
-char	*expand_string(const char *str)
+char	*expand_string_respecting_single_quotes(const char *str)
 {
 	char	*result;
 	int		si;
 	int		di;
+	int		single_q;
+	int		double_q;
 
 	if (!str)
 		return (NULL);
@@ -70,13 +54,22 @@ char	*expand_string(const char *str)
 		return (NULL);
 	si = 0;
 	di = 0;
+	single_q = 0;
+	double_q = 0;
 	while (str[si])
 	{
-		process_char_in_expansion(str, &si, result, &di);
+		update_quote_state(str[si], &single_q, &double_q);
+		if (should_skip_quote(str[si], single_q, double_q))
+			si++;
+		else if (should_expand(str, si, single_q, double_q))
+			copy_env_value(str, &si, result, &di);
+		else
+			result[di++] = str[si++];
 	}
 	result[di] = '\0';
 	return (result);
 }
+
 
 static void	remove_empty_token(t_token **tokens, t_token *prev,
 	t_token **current)
@@ -106,7 +99,7 @@ void	expand_variables(t_token **tokens)
 		if (current->type == TOKEN_WORD)
 		{
 			old_value = current->value;
-			current->value = expand_string(current->value);
+			current->value = expand_string_respecting_single_quotes(current->value);
 			if (old_value)
 				free(old_value);
 			if (current->value && ft_strlen(current->value) == 0)

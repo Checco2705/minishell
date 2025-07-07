@@ -36,7 +36,6 @@ t_command	*parse_input(const char *line)
 	if (!tokens)
 		return (NULL);
 	expand_variables(&tokens);
-	handle_quotes(tokens);
 	if (check_syntax_errors(tokens))
 	{
 		free_tokens(tokens);
